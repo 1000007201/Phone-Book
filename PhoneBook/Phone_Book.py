@@ -1,67 +1,78 @@
 import json
+from Person_phone import Person
 
 
 class Book:
     def __init__(self, filepath):
-        file = open(filepath)
-        self.json_data = json.load(file)
+        with open(filepath) as file:
+            self.json_data = json.load(file)
+        self.person_list = []
+        for data in self.json_data:
+            self.person_list.append(Person(**data))
 
     def display(self):
-        for i in self.json_data:
-            print(i)
+        for data in self.person_list:
+            print(f"{data.Name} \t {data.PhoneNumber}")
 
     def add_entry(self):
         while True:
-            name = input("Enter Name:")
-            phonenumber = input("Enter Phone Number:")
-            for i in self.json_data:
-                if i["Name"] == name:
-                    print("Name Already Exist!!")
-                    break
-                else:
-                    dict1 = {}
-                    dict1.__setitem__("Name", name)
-                    dict1.__setitem__("PhoneNumber", phonenumber)
-                    self.json_data.append(dict1)
-                    return
+            is_present, name = self.validate()
+            if is_present:
+                print(f"{name.Name} Already Exist!!")
+                break
+            phonenumber = int(input("Enter Phone Number:"))
+            person = Person(name, phonenumber)
+            self.person_list.append(person)
+            return
 
     def delete_entry(self):
         while True:
-            name = input("Enter Name:")
-            for i in self.json_data:
-                if i.get("Name") == name:
-                    var = i
-                    self.json_data.remove(var)
-                    self.display()
-                    return
-            print(f"{name} is not present")
+            is_present, person = self.validate()
+            if is_present:
+                self.person_list.remove(person)
+                self.display()
+                return
+            print(f"{person} is not present")
 
-    def display_one(self,name):
-        for i in self.json_data:
-            if i.get("Name") == name:
-                print(i)
+    def display_one(self, name):
+        for data in self.person_list:
+            if data.Name == name:
+                print(f"{data.Name} \t {data.PhoneNumber}")
                 return
         print(f"{name} is not present")
 
+    def validate(self):
+        is_present = False
+        name = input("Enter Name:")
+        for data in self.person_list:
+            if data.Name == name:
+                is_present = True
+                person = data
+                return is_present, person
+        return is_present, name
+
     def update_entry(self):
         while True:
-            name = input("Enter Name:")
-            for i in self.json_data:
-                if i.get("Name") == name:
-                    data = i
-                    while True:
-                        option = int(input("What you want to update:\n1.Name\n2.Phone Number\n"))
-                        if option == 1:
-                            new_name = input("Enter new Name:")
-                            data["Name"] = new_name
-                            self.display_one(new_name)
-                            return
-                        if option == 2:
-                            new_phone = int(input("Enter New Phone Number:"))
-                            data["PhoneNumber"] = new_phone
-                            self.display_one(name)
-                            return
-            print(f"{name} is not Present")
+            is_present, person = self.validate()
+            if is_present:
+                option = int(input("What you want to update:\n1.Name\n2.Phone Number\n"))
+                if option == 1:
+                    new_name = input("Enter new Name:")
+                    phonenumber = person.PhoneNumber
+                    self.person_list.remove(person)
+                    temp_person = Person(new_name, phonenumber)
+                    self.person_list.append(temp_person)
+                    self.display_one(new_name)
+                    return
+                if option == 2:
+                    new_phone = int(input("Enter New Phone Number:"))
+                    name = person.Name
+                    self.person_list.remove(person)
+                    temp_person = Person(name, new_phone)
+                    self.person_list.append(temp_person)
+                    self.display_one(name)
+                    return
+            print(f"{person} is not Present")
 
 
 
